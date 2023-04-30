@@ -8,7 +8,7 @@
 
 - index.html (with simple html code for "Hello there" this text)
 - Dockerfile (for nginx)
-- docker-compose-yaml (for running Dockerfile with 8081 port)
+- docker-compose.yaml (for running Dockerfile with 8081 port)
 - playbook.yml (put the repo/files and start the service)
 - inventory.ini (store server(s) details for connection)
 - all necessary step-by-step explanation
