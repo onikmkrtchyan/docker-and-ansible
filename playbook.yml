@@ -1,0 +1,79 @@
+---
+- hosts: all
+  become: true
+  vars:
+    nginx_port: 9595
+
+  tasks:
+    - name: Update apt cache and install required packages
+      apt:
+        update_cache: yes
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Add user to Docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Copy Docker Compose file
+      copy:
+        src: docker-compose.yml
+        dest: /home/{{ ansible_user }}/docker-compose.yml
+
+    - name: Copy Nginx index.html file
+      copy:
+        src: index.html
+        dest: /home/{{ ansible_user }}/index.html
+
+    - name: Copy Dockerfile
+      copy:
+        src: Dockerfile
+        dest: /home/{{ ansible_user }}/Dockerfile
+
+    - name: Install Docker Compose
+      shell: |
+        curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+
+    - name: Install Nginx
+      become: true
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start Nginx service with Docker Compose
+      shell: |
+        cd /home/{{ ansible_user }}
+        docker-compose up -d --build
+
+    - name: Open firewall port for Nginx service
+      ufw:
+        rule: allow
+        port: "{{ nginx_port }}"
+
+    - name: Set up Nginx service as a system service
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
