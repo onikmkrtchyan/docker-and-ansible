@@ -14,4 +14,5 @@
 - all necessary step-by-step explanation
 
 
-** for testing locally use "docker-compose up --build" command 
+** for testing ansible use "ansible-playbook -i inventory.ini playbook.yml -v" command (can be -vvv or -vv for returning more info from servers) 
+** for testing docker locally use "docker-compose up --build" command 
